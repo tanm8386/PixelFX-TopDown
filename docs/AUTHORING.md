@@ -55,7 +55,7 @@ that loop come from `cycle`, motion from `fly`, noise from `loopNoise`/`tileFbm`
   smoke to clear). Loops are seamless.
 - **Options** `o`: `meta.options` merged with the caller's. Honour `o.palette` (main ramp, dark to bright; use
   `fit(o.palette, n)` so any length works) and `o.seed`. Other color ramps as options are resampled too.
-  `x`, `y`, `flip`, `angle`, `light` are reserved.
+  `x`, `y`, `flip`, `angle`, `light`, `view`, `camera` are reserved.
 - **Deterministic.** Never `Math.random()` or `Date`.
 - **Layers.** `drawBack` for what's behind a character or the far half of a ring; `draw` for the rest.
 - **Actor effects** (`actor: 2`) get `o.actor = { mask, pixels, x, y, w, h, head, chest }`: the character's
@@ -67,6 +67,45 @@ that loop come from `cycle`, motion from `fly`, noise from `loopNoise`/`tileFbm`
 - **Credit.** If you adapt a specific recipe from one of Hugo's files, put a two-line credit at the top of yours:
   `// ... adapted from Sprite Fusion's open-source <name> (https://www.spritefusion.com/pixel-art-vfx/<name>),`
   `// MIT License, Copyright (c) 2026 Hugo Duprez.`
+
+## Top-down / 3/4 effects
+
+Most effects are authored side-on: x right, y down, the floor at y = 0. A top-down effect is authored in a small
+3D world instead: **x right, z towards the viewer, h up**. Set `view: "topdown"` (and usually `bg: "topdown"`) in
+`meta`, and the painter projects world points to the same screen space:
+
+```text
+sx = x
+sy = z * ground - h
+```
+
+`ground` is how far one step of depth moves down the screen: about `0.6` for a 3/4 RPG camera, `0.16` for the
+old flat floor, `1` straight down. Height is never squashed, so characters, flames and crystals stay upright.
+The camera is opt-in; every existing effect keeps its old coordinates. A caller can override the camera of an
+effect authored this way at runtime with `createFx(fx, { view: "topdown" })` or `{ camera: { pitch } }`.
+
+```js
+export const meta = { name: "Glacial bloom", /* ... */ bg: "topdown", view: "topdown" };
+
+// world point -> local screen pixel
+const [sx, sy] = p.at(x, z, h);
+// a flat ring on the floor (w thick inward, a alpha, keep(angle) picks a half)
+p.groundRing(x, z, r, w, color, a, keep);
+p.groundDisc(x, z, r, color, a);      // filled ellipse on the floor
+p.groundLine(x0, z0, x1, z1, c, a);   // straight line on the floor
+p.groundGlow(x, z, r, c, k);          // soft pool of light on the floor
+```
+
+- **Draw ground first, billboards last.** In `drawBack`, draw frost, scorch, rings, craters and shadows; then draw
+  upright things sorted by `z` (far to near). Split at `z = 0` so `drawBack` is behind a character and `draw` in
+  front of it.
+- **`p.ground`** is the depth squash. `p.at(x, z, h)` and `p.vel(vx, vy, vz)` save you doing the projection by hand.
+- **`src/fx/topdown/_lib.js`** has `TopParticles`, a world-space particle system:
+  `spawn(kind, x, z, h, vx, vz, vh, life, color, size, delay, flag)`, `update(dt)`, `draw(p, "back" | "front")`.
+  Kinds are `K.*`; `opts.fire` recolors fire and `opts.maxH` caps how high a particle can rise. `ringDots(p, r, w,
+  c, a)` draws a cheap, crisp flat ring. `src/fx/topdown/frost-nova.js` and `meteor.js` are the worked examples.
+- **Fitting the canvas.** A ground disc of radius `r` covers `2r` by `2r * ground` px on screen. Leave room above
+  for the tallest billboard and below for the near edge of the floor; `tools/check.mjs` catches spills.
 
 ## Acts
 

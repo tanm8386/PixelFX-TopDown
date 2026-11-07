@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs";
 import { shortfall } from "../src/core/rig.js";
 import { resolveIds, allIds, loadEffect } from "./lib/fxlib.mjs";
-import { createFrame, clearFrame, painterFor, createFx, createAct, poseAt, stockActor, resolveOptions, Painter, BACKDROPS } from "../src/core/index.js";
+import { createFrame, clearFrame, painterFor, createFx, createAct, poseAt, stockActor, resolveOptions, Painter, BACKDROPS, cameraFor } from "../src/core/index.js";
 
 const ids = process.argv.slice(2).length ? resolveIds(process.argv.slice(2)) : allIds();
 const M = 24; // margin around the canvas, to catch pixels drawn outside it
@@ -16,7 +16,7 @@ let fails = 0, warns = 0;
 
 function drawAt(fx, t, frame, opts) {
   const { mod, meta } = fx, p = painterFor(clearFrame(frame));
-  p.place(meta.origin[0], meta.origin[1]);
+  p.setCamera(cameraFor(meta)).place(meta.origin[0], meta.origin[1]);
   if (mod.drawBack) mod.drawBack(p, t, opts);
   mod.draw(p, t, opts);
 }
@@ -88,7 +88,7 @@ for (const id of ids) {
     if (!Array.isArray(meta.origin) || meta.origin.length !== 2) errs.push("meta.origin must be [x, y]");
     if (!(meta.duration > 0 && meta.duration <= 12)) errs.push("meta.duration must be 0..12 s");
     if (!BACKDROPS.includes(meta.bg)) errs.push(`meta.bg must be one of ${BACKDROPS.join(", ")}`);
-    const taken = Object.keys(meta.options ?? {}).filter((k) => ["x", "y", "flip", "angle", "light"].includes(k));
+    const taken = Object.keys(meta.options ?? {}).filter((k) => ["x", "y", "flip", "angle", "light", "view", "camera"].includes(k));
     if (taken.length) errs.push(`option ${taken.join(", ")} is reserved for placement and glow: rename it`);
     if (/Math\.random/.test(src)) errs.push("uses Math.random: use rng/rand/burst/cycle so frames repeat");
     if (mod.act) checkAct(fx, errs, notes);

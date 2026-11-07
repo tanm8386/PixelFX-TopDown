@@ -4,6 +4,7 @@ import { Painter } from "./painter.js";
 import { clamp } from "./math.js";
 import { stockActor } from "./actor.js";
 import { fit, toHex } from "./color.js";
+import { cameraFor } from "./camera.js";
 
 /**
  * A frame: w x h pixels whose top-left sits at (ox, oy) in world space. `color` holds opaque pixels,
@@ -51,6 +52,9 @@ export function resolveOptions(meta, o = {}) {
 export function createFx(mod, o = {}) {
   const meta = mod.meta ?? {};
   const opts = resolveOptions(meta, o);
+  // A caller's camera/view wins over the effect's own; effects authored for 3/4 set meta.view = "topdown".
+  const camera = cameraFor(o.camera !== undefined ? { camera: o.camera } : o.view !== undefined ? { view: o.view } : meta);
+  opts.camera = camera;
   const impl = mod.create ? mod.create(opts) : mod;
   const D = meta.duration ?? 1;
   let t = 0, stopAt = Infinity;
@@ -69,6 +73,7 @@ export function createFx(mod, o = {}) {
     },
     draw(frame, layer) {
       const p = painterFor(frame);
+      p.setCamera(camera);
       p.place(opts.x ?? 0, opts.y ?? 0, !!opts.flip, opts.angle ?? 0);
       p.fade = stopAt === Infinity ? 1 : clamp(1 - (t - stopAt) / FADE);
       p.lightK = opts.light ?? 1;

@@ -4,7 +4,7 @@
 
 # pixelfx.
 
-**<!-- count -->244<!-- /count --> pixel art effects and animations, every one a small piece of code.** Fire,
+**<!-- count -->246<!-- /count --> pixel art effects and animations, every one a small piece of code.** Fire,
 explosions, magic, weather, UI, pickups, critters and more. Play them live, recolor and mirror them, drop them into
 a browser game, or export sprite sheets for any engine. Plus a Claude Code skill that makes new ones the way a
 picky pixel artist would: draft, render, look, refine.
@@ -47,6 +47,7 @@ the idea at library scale, with a skill to keep going.
 | **pickups** | 11 | chest open, coin spin, collect burst, crystal shard, gem spin, heart pickup… |
 | **transitions** | 10 | blinds, burn away, crt off, diamond wipe, glitch wipe, iris… |
 | **critters** | 12 | bat, bird, butterfly, eyeball, fish school, flying skull… |
+| **top-down** | 2 | glacial bloom, meteor impact |
 <!-- /catalog -->
 
 Every effect is a file in `src/fx/<category>/<name>.js`. The [catalog](docs/CATALOG.md) lists them all.
@@ -75,6 +76,12 @@ function tick(dt) {
 ```
 
 Install from GitHub with `npm i github:patch-gg/pixelfx`, or copy `src/core` and the effects you want.
+
+**Top-down games.** Effects authored for a 3/4 camera set `view: "topdown"` in their meta and draw in world space
+(`x` right, `z` towards the viewer, `h` up). The painter squashes depth onto the floor and keeps characters, flames
+and crystals upright. An effect that uses these helpers can override its camera at runtime with
+`createFx(fx, { view: "topdown" })` or a custom camera (`{ camera: { pitch: 0.9 } }`); the two effects in `topdown/`
+are built for it.
 
 **In any engine** (Godot, Unity, GameMaker, Defold, LÖVE, Bevy), use sprite sheets:
 

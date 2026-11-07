@@ -8,8 +8,8 @@
 //   node tools/render.mjs fire/torch --opts '{"palette":["#102","#215","#43a","#8cf","#fff"]}'
 //
 // Options: --gif --mp4 --sheet (transparent PNG + JSON) --all --max N (frames in the contact sheet)
-// --zoom N (contact sheet scale) --scale N (GIF/MP4) --bg dark|ground|sky|light|black|none --seed N --fps N --opts JSON --out DIR
-// --no-actor --loops N (repeat a loop in the GIF/MP4)
+// --zoom N (contact sheet scale) --scale N (GIF/MP4) --bg dark|ground|sky|topdown|light|black|none --seed N --fps N --opts JSON --out DIR
+// --view side|topdown --pitch RADIANS (camera override) --no-actor --loops N (repeat a loop in the GIF/MP4)
 //
 // This shows the effect by itself, with the character standing by. tools/act.mjs shows it acted out.
 
@@ -37,6 +37,8 @@ for (const id of resolveIds(ids)) {
       fps: flags.fps ? +flags.fps : undefined,
       seed: flags.seed ? +flags.seed : undefined,
       bg: flags.bg,
+      view: flags.view,
+      camera: flags.pitch ? { pitch: +flags.pitch } : undefined,
       actor: flags["no-actor"] ? false : undefined,
       options: flags.opts ? JSON.parse(flags.opts) : undefined,
     });

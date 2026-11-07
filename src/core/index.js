@@ -2,6 +2,7 @@
 
 export * from "./math.js";
 export * from "./color.js";
+export * from "./camera.js";
 export * from "./particles.js";
 export * from "./shapes.js";
 export { Particles, Bits, Lights, Blazes, P, PF, B, GRAVITY, FIRE_RAMP, SMOKE_RAMP, sparkle, flare, band, crystal } from "./sim.js";

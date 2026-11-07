@@ -1,6 +1,6 @@
 # Catalog
 
-244 effects in 21 categories. Every one is a file in
+246 effects in 22 categories. Every one is a file in
 `src/fx/<category>/<name>.js`; render any of them with `node tools/render.mjs <id> --gif`.
 
 ## moves
@@ -393,3 +393,12 @@ slimes, bats, ghosts, frogs.
 | Slime | `critters/slime` | loop 1.8s | 112×88 | A glossy slime hops in place: it squashes to wind up, stretches into the jump, rounds out in the air, splats down flinging droplets that creep back, then wobbles and blinks. |
 | Snake | `critters/snake` | loop 2.4s | 136×56 | A snake slithers along the floor, head raised: humps rise and roll back down its patterned body to the tail, dust puffs where it touches down, its forked tongue flicks. |
 | Wisp | `critters/wisp` | loop 3.2s | 128×104 | A will-o'-the-wisp loops a figure-eight over the floor: a little soul-flame with a face, its flame tail licking up and streaming behind, shedding puffs and sparks. |
+
+## top-down
+
+effects drawn for a 3/4 top-down camera: novas, impacts, ground AoE.
+
+| effect | id | | size | what it does |
+|---|---|---|---|---|
+| Glacial bloom | `topdown/frost-nova` | one-shot 3.8s | 288×208 | A top-down frost nova: cold gathers into a spinning snowflake, then a rime wave races across the floor and rings of ice crystals erupt; snow drifts down and the ice melts. |
+| Meteor impact | `topdown/meteor` | one-shot 3.6s | 288×208 | A top-down meteor: a burning rock falls out of the sky trailing fire and smoke, slams into the floor in a ring of flame and dust, and leaves a glowing crater. |

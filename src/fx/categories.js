@@ -22,4 +22,5 @@ export const categories = [
   { id: "pickups", name: "pickups", blurb: "coins, gems, chests, potions" },
   { id: "transitions", name: "transitions", blurb: "wipes, irises, dissolves" },
   { id: "critters", name: "critters", blurb: "slimes, bats, ghosts, frogs" },
+  { id: "topdown", name: "top-down", blurb: "effects drawn for a 3/4 top-down camera: novas, impacts, ground AoE" },
 ];

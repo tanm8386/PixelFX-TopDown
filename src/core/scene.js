@@ -7,11 +7,11 @@ const SKY = hex("#15131d"), SKY_TOP = hex("#0d0b14"), SKY_LOW = hex("#221d33");
 const FLOOR_EDGE = hex("#4a4263"), FLOOR = hex("#2b2639"), FLOOR_DARK = hex("#211d2d"), MORTAR = hex("#1a1724");
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 
-export const BACKDROPS = ["dark", "ground", "sky", "light", "black"];
+export const BACKDROPS = ["dark", "ground", "sky", "light", "black", "topdown"];
 
 /**
  * A backdrop as a Uint32Array of w x h colors. kind: "dark" | "ground" (a stone floor from groundY down)
- * | "sky" (night gradient with stars) | "light" | "black".
+ * | "sky" (night gradient with stars) | "topdown" (a tiled stone floor seen from 3/4) | "light" | "black".
  */
 export function backdrop(kind, w, h, groundY = h) {
   const out = new Uint32Array(w * h);
@@ -25,6 +25,13 @@ export function backdrop(kind, w, h, groundY = h) {
         c = mix(SKY_TOP, SKY_LOW, Math.min(1, step / 4));
         const r = rand(x, y, 77);
         if (r > 0.994) c = mix(c, hex("#cfc8ff"), 0.35 + (r - 0.994) * 90);
+      }
+      if (kind === "topdown") {
+        // slabs running in x and z: on screen, vertical and horizontal joints
+        const TX = 24, TZ = 12, col = Math.floor(x / TX), row = Math.floor(y / TZ);
+        const joint = x % TX === 0 || y % TZ === 0;
+        c = joint ? MORTAR : (row + col) & 1 ? FLOOR : FLOOR_DARK;
+        if (!joint && rand(x, y, 91) > 0.94) c = mix(c, FLOOR_EDGE, 0.3);
       }
       if (kind === "ground" && y >= groundY) {
         const gy = y - groundY;

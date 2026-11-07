@@ -23,7 +23,7 @@ export class Painter {
     const f = this.frame;
     this.w = f.w; this.h = f.h; this.ox = f.ox | 0; this.oy = f.oy | 0; this.C = f.color; this.L = f.light;
     this.tx = 0; this.ty = 0; this.fx = 1; this.cs = 1; this.sn = 0;
-    this.fade = 1; this.lightK = 1; this.layer = "front";
+    this.fade = 1; this.lightK = 1; this.layer = "front"; this.cam = null;
     return this;
   }
 
@@ -31,6 +31,53 @@ export class Painter {
   place(x, y, flip = false, angle = 0) {
     this.tx = x; this.ty = y; this.fx = flip ? -1 : 1; this.cs = Math.cos(angle); this.sn = Math.sin(angle);
     return this;
+  }
+
+  /** The camera used by this effect (null for the old flat, side-on space). */
+  setCamera(cam) { this.cam = cam; return this; }
+  /** How much one step of depth moves down the screen. */
+  get ground() { return this.cam?.ground ?? 1; }
+  /** The camera's overall zoom (1 when there is no camera). */
+  get camScale() { return this.cam?.scale ?? 1; }
+
+  // ---- top-down / 3/4 helpers. World: x right, y up, z towards the viewer. The painter still draws in
+  // screen pixels, so these return local screen coordinates.
+  /** A world point (x right, y up, z towards the viewer) -> local screen [x, y]. */
+  at(x, z, y = 0) { const g = this.ground, s = this.camScale; return [x * s, (z * g - y) * s]; }
+  /** A world velocity -> the screen velocity a streak should use. */
+  vel(vx, vy, vz) { const g = this.ground, s = this.camScale; return [vx * s, (vz * g - vy) * s]; }
+  /** A point on the ground (height 0). */
+  groundAt(x, z) { return this.at(x, z, 0); }
+
+  /** A flat ring on the ground, centred at (x, z), radius r, thickness w inward. keep(angle) picks halves. */
+  groundRing(x, z, r, w, c, a = 1, keep = null) {
+    if (r <= 0) return;
+    const g = this.ground, s = this.camScale, cx = x * s, cy = z * g * s;
+    const R = r * s, ry = R * g, r0 = Math.max(0, R - w * s);
+    this.shade(cx - R, cy - ry, cx + R, cy + ry, (sx, sy, o) => {
+      const dx = (sx - cx) / R, dy = (sy - cy) / (ry || 1e-6), d = Math.sqrt(dx * dx + dy * dy) * R;
+      if (d > R || d < r0) return;
+      const ang = Math.atan2(dy, dx);
+      if (keep && !keep(ang)) return;
+      const v = R > 0 ? (d - r0) / (R - r0) : 1;
+      o.c = call(c, v, ang);
+      o.a = call(a, v, ang);
+    });
+  }
+  /** A filled disc lying flat on the ground. c and a may be functions of (d: 0 centre to 1 rim, angle). */
+  groundDisc(x, z, r, c, a = 1) { const g = this.ground, s = this.camScale; this.ellipse(x * s, z * g * s, r * s, r * g * s, c, a); }
+  /** A straight line on the ground. */
+  groundLine(x0, z0, x1, z1, c, a = 1) { const g = this.ground, s = this.camScale; this.line(x0 * s, z0 * g * s, x1 * s, z1 * g * s, c, a); }
+  /** A soft pool of light lying flat on the ground. */
+  groundGlow(x, z, r, c, k = 0.5) {
+    if (r < 1 || k <= 0.004) return;
+    const g = this.ground, s = this.camScale, cx = x * s, cy = z * g * s, R = r * s, ry = R * g;
+    this.shade(cx - R, cy - ry, cx + R, cy + ry, (sx, sy, o) => {
+      const d = Math.hypot((sx - cx) / R, (sy - cy) / (ry || 1e-6));
+      if (d >= 1) return;
+      const f = 1 - d;
+      o.l = c; o.k = f * f * k;
+    });
   }
 
   // ---- transforms: local (effect) space <-> screen (frame) space

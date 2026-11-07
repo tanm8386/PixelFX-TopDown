@@ -1,6 +1,6 @@
 ---
 name: pixelfx
-description: Make pixel art effects and sprite animations in code with the pixelfx library, which has 244 ready-made ones, acted out by a character who winds up, freezes on contact and recovers (fire, explosions, water, ice, lightning, sci-fi, melee, impacts, projectiles, spawn and death, arcane, holy, shadow, status, nature, weather, UI, pickups, transitions, critters) to drop into a game, recolor, export as sprite sheets or remix, plus a draft, render, look, refine loop that makes new ones look hand-animated. Use when someone wants pixel art VFX, sprite animations or sprite sheets, game juice, a specific effect ("a frost nova for my mage", "a coin pickup sparkle"), wants to use or export a pixelfx effect in Godot, Unity, Phaser or a canvas game, or wants their pixel effects to look better.
+description: Make pixel art effects and sprite animations in code with the pixelfx library, which has 246 ready-made ones, acted out by a character who winds up, freezes on contact and recovers (fire, explosions, water, ice, lightning, sci-fi, melee, impacts, projectiles, spawn and death, arcane, holy, shadow, status, nature, weather, UI, pickups, transitions, critters, top-down) to drop into a game, recolor, export as sprite sheets or remix, plus a draft, render, look, refine loop that makes new ones look hand-animated. Use when someone wants pixel art VFX, sprite animations or sprite sheets, game juice, a specific effect ("a frost nova for my mage", "a coin pickup sparkle"), wants to use or export a pixelfx effect in Godot, Unity, Phaser or a canvas game, or wants their pixel effects to look better.
 license: MIT
 compatibility: Node 18 or newer. ffmpeg is optional (GIF and MP4 previews).
 ---
@@ -62,6 +62,11 @@ if (fx.done()) removeIt();               // one-shots end on their own; fx.stop(
 
 Several effects can share one frame. In a WebGL engine, upload the composited RGBA to a texture each frame, or
 render the effect to a sprite sheet once (below) and play it like any other animation.
+
+**Top-down games.** Effects with `view: "topdown"` in their meta are authored in world space (`x` right, `z` towards
+the viewer, `h` up) and draw with `p.at(x, z, h)`, `p.groundRing`, `p.groundDisc` and friends. Use one directly, or
+override the camera of an effect that uses these helpers with `createFx(fx, { view: "topdown" })` or a custom
+`{ camera: { pitch } }`. See `src/fx/topdown/` and "Top-down / 3/4 effects" in `docs/AUTHORING.md`.
 
 **Any engine** (Godot, Unity, GameMaker, Defold, LÖVE, Bevy, Construct): export sprite sheets.
 `node tools/render.mjs ice/frost-nova --sheet` writes `records/ice/frost-nova/frost-nova.png` (transparent
